@@ -1,0 +1,340 @@
+# CASE 002 — THE MIDNIGHT MANUSCRIPT  (agent-readable half)
+# All characters and events are fictional. Times are minutes since midnight (1320 = 10:00 PM).
+
+id: case002
+title: "The Midnight Manuscript"
+summary: >
+  During a late research night at the Hollow Pine Library, a page of a rare 18th-century
+  manuscript was swapped for a skilled forgery. The page was verified in the archive at
+  10:00 PM and the forgery was discovered at 11:50 PM. Four people had the opportunity.
+incident_time: 1430
+window_start: 1320
+window_end: 1430
+crime_scene: archive
+
+config:
+  budget: 14
+  max_actions: 9
+  confidence_threshold: 0.90
+  min_supporting_bundles: 2
+  negligible_eig: 0.01
+  relevance_minutes: 5
+
+people:
+  - id: dmitri
+    name: Dmitri Vale
+    role: Archivist
+    bio: Holds the archive key credential. Staffing the front desk that night.
+    access: [archive, front_desk, conservation_lab]
+  - id: esme
+    name: Esme Okafor
+    role: Visiting Scholar
+    bio: Visitor account only; studies the collection in the reading room.
+    access: [reading_room, lobby]
+  - id: felix
+    name: Felix Grant
+    role: Security Contractor
+    bio: Administers cameras and badge encoding from the security office.
+    access: [security_office, archive, front_desk]
+  - id: greta
+    name: Greta Lind
+    role: Board Member
+    bio: Attended the board dinner earlier in the evening. Owns a master key.
+    access: [archive, lobby]
+  - id: hana
+    name: Hana Ito
+    role: Graduate Student
+    suspect: false
+    bio: Was studying in the reading room. Not a suspect.
+    access: [reading_room]
+
+locations:
+  - {id: archive, name: Rare-Books Archive, type: archive}
+  - {id: reading_room, name: Reading Room, type: reading_room}
+  - {id: front_desk, name: Front Desk, type: desk}
+  - {id: lobby, name: Lobby and Visitor Kiosk, type: lobby}
+  - {id: conservation_lab, name: Conservation Lab, type: laboratory}
+  - {id: security_office, name: Security Office, type: office}
+  - {id: outside, name: Outside the Library, type: exterior}
+
+connections:
+  - {a: archive, b: reading_room, minutes: 1}
+  - {a: reading_room, b: front_desk, minutes: 1}
+  - {a: front_desk, b: lobby, minutes: 1}
+  - {a: lobby, b: outside, minutes: 1}
+  - {a: front_desk, b: security_office, minutes: 2}
+  - {a: archive, b: conservation_lab, minutes: 2}
+  - {a: conservation_lab, b: security_office, minutes: 3}
+
+hypotheses:
+  - {id: HD, description: Dmitri swapped the page, implicates: dmitri, prior: 0.25}
+  - {id: HE, description: Esme swapped the page, implicates: esme, prior: 0.25}
+  - {id: HF, description: Felix swapped the page, implicates: felix, prior: 0.25}
+  - {id: HG, description: Greta swapped the page, implicates: greta, prior: 0.25}
+
+statements:
+  - id: st_dmitri_1
+    speaker: dmitri
+    content: "I was at the front desk cataloguing returns from ten until midnight. I never went into the archive."
+    recorded_at: 1435
+    claim_type: alibi
+    placements: [{subject: dmitri, location: front_desk, start: 1320, end: 1440}]
+  - id: st_esme_1
+    speaker: esme
+    content: "I never left the reading room. I was transcribing letters until about 11:30."
+    recorded_at: 1435
+    claim_type: alibi
+    placements: [{subject: esme, location: reading_room, start: 1320, end: 1410}]
+    assertions: [{subject: esme, predicate: present_in_reading_room, value: true, start: 1320, end: 1410}]
+  - id: st_felix_1
+    speaker: felix
+    content: "I was in the security office watching the monitors all night."
+    recorded_at: 1435
+    claim_type: alibi
+    placements: [{subject: felix, location: security_office, start: 1320, end: 1440}]
+  - id: st_greta_1
+    speaker: greta
+    content: "I left after the board dinner at 9:45 and drove straight home."
+    recorded_at: 1435
+    claim_type: alibi
+    placements: [{subject: greta, location: outside, start: 1305, end: 1440}]
+
+initial_evidence:
+  - id: ev_condition_report
+    evidence_type: incident_report
+    description: "Page 14 verified authentic at 10:00 PM; forgery identified by a conservator at 11:50 PM."
+    reliability: 0.95
+    provenance: Archive condition report
+  - id: ev_key_roster
+    evidence_type: access_roster
+    description: "Dmitri, Felix and Greta hold credentials that open the archive. Esme has a visitor account."
+    reliability: 0.95
+    provenance: Library key roster
+
+evidence_sources:
+  - {id: src_archive_door, evidence_type: access_log, name: Archive door log, location: archive}
+  - {id: src_desk_camera, evidence_type: camera_record, name: Front-desk camera, location: front_desk}
+  - {id: src_badge_audit, evidence_type: audit_log, name: Badge credential issuance audit, location: security_office}
+  - {id: src_kiosk_log, evidence_type: access_log, name: Visitor-kiosk session log, location: lobby}
+  - {id: src_forgery, evidence_type: forensic_analysis, name: Forgery paper-stock analysis, location: conservation_lab}
+  - {id: src_dinner, evidence_type: alibi_record, name: Board-dinner receipts and valet log}
+  - {id: src_monitor, evidence_type: activity_log, name: Security-console activity log, location: security_office}
+  - {id: src_hana_interview, evidence_type: witness_interview, name: Reading-room patron interview}
+  - {id: src_dmitri_interview, evidence_type: suspect_interview, name: Follow-up interview with Dmitri}
+  - {id: src_esme_interview, evidence_type: suspect_interview, name: Follow-up interview with Esme}
+
+actions:
+  - id: act_archive_door
+    type: inspect_access_log
+    label: Pull archive door log
+    description: Credential swipes on the archive door during the window.
+    cost: 2
+    bundle: archive_access
+    activity: Checking which credentials opened the archive
+    examines: src_archive_door
+    outcomes:
+      - {code: dmitri_badge, label: "Dmitri's credential opened the archive"}
+      - {code: felix_badge, label: "Felix's credential opened the archive"}
+      - {code: greta_badge, label: "Greta's credential opened the archive"}
+      - {code: no_entry, label: No credential entries}
+    likelihoods:
+      HD: {dmitri_badge: 0.70, felix_badge: 0.05, greta_badge: 0.05, no_entry: 0.20}
+      HE: {dmitri_badge: 0.45, felix_badge: 0.05, greta_badge: 0.05, no_entry: 0.45}
+      HF: {dmitri_badge: 0.05, felix_badge: 0.55, greta_badge: 0.05, no_entry: 0.35}
+      HG: {dmitri_badge: 0.05, felix_badge: 0.05, greta_badge: 0.55, no_entry: 0.35}
+
+  - id: act_desk_camera
+    type: inspect_camera_footage
+    label: Review front-desk camera
+    description: Footage of the front desk between 10:30 and 10:50 PM.
+    cost: 2
+    bundle: desk_camera
+    activity: "Evaluating front-desk footage against Dmitri's alibi"
+    examines: src_desk_camera
+    target: dmitri
+    outcomes:
+      - {code: dmitri_present, label: Dmitri visible at the desk}
+      - {code: desk_empty, label: Desk unattended}
+      - {code: unclear, label: Footage inconclusive}
+    likelihoods:
+      HD: {dmitri_present: 0.10, desk_empty: 0.75, unclear: 0.15}
+      HE: {dmitri_present: 0.65, desk_empty: 0.20, unclear: 0.15}
+      HF: {dmitri_present: 0.55, desk_empty: 0.25, unclear: 0.20}
+      HG: {dmitri_present: 0.60, desk_empty: 0.25, unclear: 0.15}
+    conditional:
+      - given: {act_archive_door: dmitri_badge}
+        likelihoods:
+          HD: {dmitri_present: 0.05, desk_empty: 0.85, unclear: 0.10}
+          HE: {dmitri_present: 0.75, desk_empty: 0.10, unclear: 0.15}
+          HF: {dmitri_present: 0.60, desk_empty: 0.25, unclear: 0.15}
+          HG: {dmitri_present: 0.60, desk_empty: 0.25, unclear: 0.15}
+
+  - id: act_badge_audit
+    type: inspect_audit_log
+    label: Audit badge credential issuance
+    description: Every credential encoded or re-issued that evening.
+    cost: 2
+    bundle: credential_audit
+    activity: Auditing badge encoding history
+    examines: src_badge_audit
+    requires: [act_archive_door]
+    outcomes:
+      - {code: clone_detected, label: Duplicate credential encoded}
+      - {code: felix_reissue, label: Credential re-issued from security console}
+      - {code: no_anomaly, label: No anomalies}
+    likelihoods:
+      HD: {clone_detected: 0.05, felix_reissue: 0.05, no_anomaly: 0.90}
+      HE: {clone_detected: 0.70, felix_reissue: 0.05, no_anomaly: 0.25}
+      HF: {clone_detected: 0.25, felix_reissue: 0.45, no_anomaly: 0.30}
+      HG: {clone_detected: 0.05, felix_reissue: 0.05, no_anomaly: 0.90}
+
+  - id: act_kiosk_log
+    type: inspect_access_log
+    label: Pull visitor-kiosk session log
+    description: Visitor accounts active on the lobby kiosk (which can encode badges).
+    cost: 1
+    bundle: kiosk_sessions
+    activity: Tracing visitor-kiosk sessions
+    examines: src_kiosk_log
+    requires: [act_badge_audit]
+    outcomes:
+      - {code: esme_session, label: "Esme's visitor account used the kiosk"}
+      - {code: greta_session, label: "Greta's account used the kiosk"}
+      - {code: no_session, label: No kiosk sessions}
+    likelihoods:
+      HD: {esme_session: 0.10, greta_session: 0.10, no_session: 0.80}
+      HE: {esme_session: 0.80, greta_session: 0.05, no_session: 0.15}
+      HF: {esme_session: 0.15, greta_session: 0.10, no_session: 0.75}
+      HG: {esme_session: 0.10, greta_session: 0.60, no_session: 0.30}
+
+  - id: act_paper_analysis
+    type: forensic_analysis
+    label: "Analyze the forgery's paper stock"
+    description: Fibre and watermark comparison against the conservation lab's stock.
+    cost: 3
+    bundle: paper_forensics
+    activity: Comparing the forgery's paper stock
+    examines: src_forgery
+    outcomes:
+      - {code: lab_stock, label: Matches conservation-lab stock}
+      - {code: external_stock, label: Commercial stock from outside}
+    likelihoods:
+      HD: {lab_stock: 0.65, external_stock: 0.35}
+      HE: {lab_stock: 0.30, external_stock: 0.70}
+      HF: {lab_stock: 0.35, external_stock: 0.65}
+      HG: {lab_stock: 0.30, external_stock: 0.70}
+
+  - id: act_greta_alibi
+    type: verify_alibi
+    label: "Verify Greta's dinner alibi"
+    description: Restaurant receipts and valet log.
+    cost: 1
+    bundle: greta_alibi
+    activity: "Checking Greta's departure alibi"
+    examines: src_dinner
+    target: greta
+    outcomes:
+      - {code: confirmed, label: Alibi confirmed}
+      - {code: car_returned, label: Car returned to the library}
+    likelihoods:
+      HD: {confirmed: 0.85, car_returned: 0.15}
+      HE: {confirmed: 0.85, car_returned: 0.15}
+      HF: {confirmed: 0.85, car_returned: 0.15}
+      HG: {confirmed: 0.25, car_returned: 0.75}
+
+  - id: act_security_monitor
+    type: inspect_activity_log
+    label: Check security-console activity
+    description: "Felix's console session and camera control actions."
+    cost: 2
+    bundle: console_activity
+    activity: "Checking Felix's console activity"
+    examines: src_monitor
+    target: felix
+    outcomes:
+      - {code: steady_monitoring, label: Steady monitoring all night}
+      - {code: camera_paused, label: Archive camera feed paused}
+    likelihoods:
+      HD: {steady_monitoring: 0.80, camera_paused: 0.20}
+      HE: {steady_monitoring: 0.80, camera_paused: 0.20}
+      HF: {steady_monitoring: 0.35, camera_paused: 0.65}
+      HG: {steady_monitoring: 0.85, camera_paused: 0.15}
+
+  - id: act_hana
+    type: interview_witness
+    label: Interview the reading-room patron
+    description: Ask Hana Ito who came and went in the reading room.
+    cost: 2
+    bundle: hana_testimony
+    activity: Interviewing the reading-room witness
+    examines: src_hana_interview
+    target: hana
+    outcomes:
+      - {code: esme_left, label: "Esme's seat was empty for a while"}
+      - {code: esme_stayed, label: Esme never left}
+    likelihoods:
+      HD: {esme_left: 0.20, esme_stayed: 0.80}
+      HE: {esme_left: 0.65, esme_stayed: 0.35}
+      HF: {esme_left: 0.20, esme_stayed: 0.80}
+      HG: {esme_left: 0.20, esme_stayed: 0.80}
+
+  - id: act_confront_dmitri
+    type: question_suspect
+    label: Confront Dmitri with the timeline
+    description: Put the conflicting records to Dmitri.
+    cost: 1
+    bundle: interview_dmitri
+    activity: Questioning Dmitri about conflicting records
+    examines: src_dmitri_interview
+    target: dmitri
+    requires_contradiction_on: dmitri
+    outcomes:
+      - {code: revises_story, label: Revises his account}
+      - {code: maintains_story, label: Maintains his account}
+    likelihoods:
+      HD: {revises_story: 0.60, maintains_story: 0.40}
+      HE: {revises_story: 0.25, maintains_story: 0.75}
+      HF: {revises_story: 0.30, maintains_story: 0.70}
+      HG: {revises_story: 0.30, maintains_story: 0.70}
+
+  - id: act_confront_esme
+    type: question_suspect
+    label: Confront Esme with the timeline
+    description: Put the conflicting records to Esme.
+    cost: 1
+    bundle: interview_esme
+    activity: Questioning Esme about conflicting records
+    examines: src_esme_interview
+    target: esme
+    requires_contradiction_on: esme
+    outcomes:
+      - {code: revises_story, label: Revises her account}
+      - {code: maintains_story, label: Maintains her account}
+    likelihoods:
+      HD: {revises_story: 0.35, maintains_story: 0.65}
+      HE: {revises_story: 0.55, maintains_story: 0.45}
+      HF: {revises_story: 0.35, maintains_story: 0.65}
+      HG: {revises_story: 0.35, maintains_story: 0.65}
+
+perturbations:
+  - id: dmitri_revised_claim
+    label: "Change Dmitri's structured claim"
+    description: >
+      Dmitri's statement now says he stepped into the archive at 10:38 to reshelve a box.
+      The badge record stops contradicting him, which changes which follow-ups are eligible.
+    ops:
+      - op: revise_statement
+        statement: st_dmitri_1
+        content: "I was at the front desk all night except for a few minutes around 10:40 when I reshelved a box in the archive."
+        placements:
+          - {subject: dmitri, location: front_desk, start: 1320, end: 1356}
+          - {subject: dmitri, location: archive, start: 1358, end: 1364}
+          - {subject: dmitri, location: front_desk, start: 1367, end: 1440}
+  - id: seal_reading_room_door
+    label: Seal the reading-room door into the archive
+    description: >
+      Removes the Archive ↔ Reading Room connection. The front desk and lobby fall outside the
+      archive's relevance radius, so the desk-camera and kiosk investigations become ineligible and
+      the agent has to build its case from other evidence.
+    ops:
+      - {op: remove_connection, a: archive, b: reading_room}

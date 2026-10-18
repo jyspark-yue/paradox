@@ -1,0 +1,187 @@
+# SIMULATOR-PRIVATE — never seeded into the agent-readable graph or sent to the LLM.
+case_id: case002
+
+variants:
+  A:
+    id: A
+    truth: HE
+    narrative: >
+      Esme used the lobby kiosk at 10:18 PM to encode a duplicate of Dmitri's archive
+      credential, slipped out of the reading room, entered the archive at 10:40 with the clone,
+      and swapped the page for a forgery printed on commercial paper she brought with her.
+    outcomes:
+      act_archive_door: dmitri_badge
+      act_desk_camera: dmitri_present
+      act_badge_audit: clone_detected
+      act_kiosk_log: esme_session
+      act_paper_analysis: external_stock
+      act_greta_alibi: confirmed
+      act_security_monitor: steady_monitoring
+      act_hana: esme_left
+      act_confront_dmitri: maintains_story
+      act_confront_esme: revises_story
+  B:
+    id: B
+    truth: HF
+    narrative: >
+      Felix paused the archive camera from his console at 10:35, used his own credential on the
+      archive door at 10:40, and re-issued his badge afterwards to muddy the log.
+    outcomes:
+      act_archive_door: felix_badge
+      act_desk_camera: dmitri_present
+      act_badge_audit: felix_reissue
+      act_kiosk_log: no_session
+      act_paper_analysis: external_stock
+      act_greta_alibi: confirmed
+      act_security_monitor: camera_paused
+      act_hana: esme_stayed
+      act_confront_dmitri: maintains_story
+      act_confront_esme: maintains_story
+
+reveals:
+  act_archive_door:
+    dmitri_badge:
+      description: "Archive door log: Dmitri's credential opened the archive at 10:40 PM."
+      reliability: 0.85
+      provenance: Archive door controller
+      records: [{subject: dmitri, location: archive, start: 1360, end: 1362}]
+    felix_badge:
+      description: "Archive door log: Felix's credential opened the archive at 10:40 PM."
+      reliability: 0.85
+      provenance: Archive door controller
+      records: [{subject: felix, location: archive, start: 1360, end: 1362}]
+    greta_badge:
+      description: "Archive door log: Greta's master key opened the archive at 10:40 PM."
+      reliability: 0.85
+      provenance: Archive door controller
+      records: [{subject: greta, location: archive, start: 1360, end: 1362}]
+    no_entry:
+      description: "Archive door log: no credential entries during the window."
+      reliability: 0.85
+      provenance: Archive door controller
+  act_desk_camera:
+    dmitri_present:
+      description: "Front-desk camera shows Dmitri at the desk continuously from 10:30 to 10:50 PM."
+      reliability: 0.9
+      provenance: Front-desk CCTV
+      records: [{subject: dmitri, location: front_desk, start: 1350, end: 1370}]
+    desk_empty:
+      description: "Front-desk camera shows the desk unattended from 10:30 to 10:50 PM."
+      reliability: 0.9
+      provenance: Front-desk CCTV
+      assertions: [{subject: dmitri, predicate: at_front_desk, value: false, start: 1350, end: 1370}]
+    unclear:
+      description: "Front-desk footage is too dark to identify anyone."
+      reliability: 0.5
+      provenance: Front-desk CCTV
+  act_badge_audit:
+    clone_detected:
+      description: "Badge audit: a duplicate of Dmitri's archive credential was encoded at the lobby visitor kiosk at 10:18 PM."
+      reliability: 0.9
+      provenance: Credential management system
+      explains:
+        - {action: act_archive_door, subject: dmitri, reason: "The 10:40 archive entry may have used the cloned credential, not Dmitri himself."}
+    felix_reissue:
+      description: "Badge audit: Felix's credential was re-issued from the security console at 10:52 PM."
+      reliability: 0.9
+      provenance: Credential management system
+      records: [{subject: felix, location: security_office, start: 1372, end: 1373}]
+    no_anomaly:
+      description: "Badge audit: no credentials encoded or re-issued that evening."
+      reliability: 0.9
+      provenance: Credential management system
+  act_kiosk_log:
+    esme_session:
+      description: "Kiosk log: Esme's visitor account was active on the lobby kiosk from 10:18 to 10:22 PM."
+      reliability: 0.9
+      provenance: Visitor kiosk session log
+      records: [{subject: esme, location: lobby, start: 1338, end: 1342}]
+    greta_session:
+      description: "Kiosk log: Greta's account was active on the lobby kiosk at 10:15 PM."
+      reliability: 0.9
+      provenance: Visitor kiosk session log
+      records: [{subject: greta, location: lobby, start: 1335, end: 1337}]
+    no_session:
+      description: "Kiosk log: no sessions during the window."
+      reliability: 0.9
+      provenance: Visitor kiosk session log
+  act_paper_analysis:
+    lab_stock:
+      description: "The forgery's paper matches the conservation lab's archival stock."
+      reliability: 0.85
+      provenance: Conservator fibre analysis
+    external_stock:
+      description: "The forgery is on commercial cotton paper not stocked by the library."
+      reliability: 0.85
+      provenance: Conservator fibre analysis
+  act_greta_alibi:
+    confirmed:
+      description: "Receipt and valet log put Greta's car away from the library from 9:50 to 11:45 PM."
+      reliability: 0.85
+      provenance: Restaurant receipt + valet log
+      records: [{subject: greta, location: outside, start: 1310, end: 1425}]
+    car_returned:
+      description: "Valet log shows Greta's car returned to the library at 10:30 PM."
+      reliability: 0.85
+      provenance: Valet log
+      records: [{subject: greta, location: lobby, start: 1350, end: 1352}]
+  act_security_monitor:
+    steady_monitoring:
+      description: "Felix's console shows steady monitoring activity all night; no camera controls used."
+      reliability: 0.8
+      provenance: Security console audit
+      records: [{subject: felix, location: security_office, start: 1320, end: 1440}]
+    camera_paused:
+      description: "Felix's console paused the archive camera feed from 10:35 to 10:45 PM."
+      reliability: 0.8
+      provenance: Security console audit
+      records: [{subject: felix, location: security_office, start: 1354, end: 1355}]
+  act_hana:
+    esme_left:
+      description: "Hana says Esme's seat was empty for about twenty minutes from around 10:15."
+      reliability: 0.6
+      provenance: Interview with Hana Ito
+      statements:
+        - id: st_hana_1
+          speaker: hana
+          content: "Esme's seat was empty for maybe twenty minutes, starting around quarter past ten."
+          assertions: [{subject: esme, predicate: present_in_reading_room, value: false, start: 1335, end: 1355}]
+    esme_stayed:
+      description: "Hana says Esme never left the reading room."
+      reliability: 0.6
+      provenance: Interview with Hana Ito
+      statements:
+        - id: st_hana_1
+          speaker: hana
+          content: "Esme was at the table across from me the whole night."
+          placements: [{subject: esme, location: reading_room, start: 1320, end: 1400}]
+  act_confront_dmitri:
+    revises_story:
+      description: "Dmitri now says he briefly went into the archive to reshelve a box."
+      reliability: 0.5
+      provenance: Follow-up interview with Dmitri
+      statements:
+        - id: st_dmitri_2
+          speaker: dmitri
+          claim_type: revised_alibi
+          content: "I went into the archive for a minute to reshelve a box. Nothing more."
+          placements: [{subject: dmitri, location: archive, start: 1359, end: 1363}]
+    maintains_story:
+      description: "Dmitri insists he never left the front desk and someone must have used his credential."
+      reliability: 0.5
+      provenance: Follow-up interview with Dmitri
+  act_confront_esme:
+    revises_story:
+      description: "Esme says she stepped out to the lobby to print notes at the kiosk."
+      reliability: 0.5
+      provenance: Follow-up interview with Esme
+      statements:
+        - id: st_esme_2
+          speaker: esme
+          claim_type: revised_alibi
+          content: "I went to the lobby kiosk to print some notes, then came straight back."
+          placements: [{subject: esme, location: lobby, start: 1337, end: 1343}]
+    maintains_story:
+      description: "Esme maintains she never left the reading room."
+      reliability: 0.5
+      provenance: Follow-up interview with Esme

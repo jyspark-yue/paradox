@@ -1,0 +1,199 @@
+# SIMULATOR-PRIVATE — never seeded into the agent-readable graph or sent to the LLM.
+case_id: case001
+
+variants:
+  A:
+    id: A
+    truth: H2
+    narrative: >
+      Ben used his maintenance override to open the passage door into Lab A at 8:41 PM,
+      carried the prototype out through the passage to the loading dock, then went back
+      inside to establish an alibi and exited the main entrance at 9:08 PM.
+    outcomes:
+      act_lab_door: no_badge
+      act_entrance_log: ben_exit_late
+      act_maint_log: passage_override
+      act_passage_cam: figure_ben
+      act_meeting: full
+      act_guard: saw_ben_dock
+      act_workstation: continuous
+      act_admin_audit: no_override
+      act_confront_ben: revises_story
+      act_confront_alice: maintains_story
+      act_confront_clara: maintains_story
+  B:
+    id: B
+    truth: H3
+    narrative: >
+      Clara left the meeting at 8:30 PM, disabled the cabinet alarm from the Director's Office
+      at 8:34, badged into Lab A at 8:38, and returned to the meeting by 8:50.
+    outcomes:
+      act_lab_door: clara_badge
+      act_entrance_log: ben_exit_early
+      act_maint_log: routine_only
+      act_passage_cam: empty
+      act_meeting: left_early
+      act_guard: saw_nothing
+      act_workstation: continuous
+      act_admin_audit: override_used
+      act_confront_ben: maintains_story
+      act_confront_alice: maintains_story
+      act_confront_clara: revises_story
+
+reveals:
+  act_lab_door:
+    alice_badge:
+      description: "Lab A door log: Alice's badge opened the door at 8:32 PM."
+      reliability: 0.9
+      provenance: Access-control server export
+      records: [{subject: alice, location: lab_a, start: 1232, end: 1236}]
+    clara_badge:
+      description: "Lab A door log: Clara's badge opened the door at 8:38 PM."
+      reliability: 0.9
+      provenance: Access-control server export
+      records: [{subject: clara, location: lab_a, start: 1238, end: 1240}]
+    no_badge:
+      description: "Lab A door log: no badge swipes between 8:00 and 8:55 PM — whoever entered did not use the main lab door."
+      reliability: 0.9
+      provenance: Access-control server export
+  act_entrance_log:
+    ben_exit_early:
+      description: "Main-entrance log: Ben's badge exited at 8:26 PM."
+      reliability: 0.9
+      provenance: Access-control server export
+      records: [{subject: ben, location: main_entrance, start: 1226, end: 1227}]
+    ben_exit_late:
+      description: "Main-entrance log: Ben's badge exited at 9:08 PM, not before 8:30."
+      reliability: 0.9
+      provenance: Access-control server export
+      records: [{subject: ben, location: main_entrance, start: 1268, end: 1269}]
+  act_maint_log:
+    passage_override:
+      description: "Maintenance log: Ben's override code opened the passage door into Lab A at 8:41 PM."
+      reliability: 0.9
+      provenance: Door-controller maintenance log
+      records: [{subject: ben, location: passage, start: 1241, end: 1243}]
+    routine_only:
+      description: "Maintenance log: only the 6:15 PM routine inspection; no passage-door events in the window."
+      reliability: 0.9
+      provenance: Door-controller maintenance log
+  act_passage_cam:
+    figure_ben:
+      description: "Passage camera, 8:42 PM: a figure matching Ben's build and uniform carries a hard case toward the loading dock."
+      reliability: 0.75
+      provenance: Passage CCTV, camera P-2
+      records: [{subject: ben, location: passage, start: 1242, end: 1244}]
+    figure_unclear:
+      description: "Passage camera, 8:42 PM: a figure passes through with face obscured; identity undeterminable."
+      reliability: 0.6
+      provenance: Passage CCTV, camera P-2
+    empty:
+      description: "Passage camera: no movement during the window."
+      reliability: 0.8
+      provenance: Passage CCTV, camera P-2
+  act_meeting:
+    full:
+      description: "Minutes and call log place Clara in Conference Room B from 8:00 to 9:00 PM."
+      reliability: 0.9
+      provenance: Meeting minutes + video-call join log
+      records: [{subject: clara, location: conf_b, start: 1200, end: 1260}]
+    left_early:
+      description: "Call log: Clara's laptop dropped off the meeting from 8:31 to 8:49 PM."
+      reliability: 0.85
+      provenance: Video-call join log
+      records: [{subject: clara, location: conf_b, start: 1200, end: 1230}]
+      assertions: [{subject: clara, predicate: present_in_meeting, value: false, start: 1231, end: 1249}]
+    no_meeting:
+      description: "Room booking system: no meeting was booked in Conference Room B that evening."
+      reliability: 0.9
+      provenance: Room booking system
+      assertions: [{subject: clara, predicate: present_in_meeting, value: false, start: 1200, end: 1260}]
+  act_guard:
+    saw_ben_dock:
+      description: "Marcus says he saw Ben at the loading dock around 8:50 PM loading a hard case into his car."
+      reliability: 0.6
+      provenance: Interview with Marcus Hale
+      statements:
+        - id: st_marcus_1
+          speaker: marcus
+          content: "Around ten to nine I saw Ben out at the loading dock putting a hard case in his car."
+          placements: [{subject: ben, location: loading_dock, start: 1248, end: 1251}]
+    saw_alice_lab:
+      description: "Marcus says he saw Alice through the Lab A window around 8:40 PM."
+      reliability: 0.6
+      provenance: Interview with Marcus Hale
+      statements:
+        - id: st_marcus_1
+          speaker: marcus
+          content: "I saw Dr. Morgan through the Lab A window around 8:40."
+          placements: [{subject: alice, location: lab_a, start: 1238, end: 1242}]
+    saw_nothing:
+      description: "Marcus noticed nothing unusual on his rounds."
+      reliability: 0.6
+      provenance: Interview with Marcus Hale
+  act_workstation:
+    continuous:
+      description: "Alice's workstation shows continuous keystroke activity from 8:05 to 8:58 PM."
+      reliability: 0.8
+      provenance: Endpoint activity log
+      records: [{subject: alice, location: alice_office, start: 1205, end: 1258}]
+    idle_gap:
+      description: "Alice's workstation was idle from 8:30 to 8:50 PM."
+      reliability: 0.8
+      provenance: Endpoint activity log
+      assertions: [{subject: alice, predicate: working_at_workstation, value: false, start: 1230, end: 1250}]
+  act_admin_audit:
+    override_used:
+      description: "Clara's admin credential disabled the cabinet alarm from the Director's Office terminal at 8:34 PM."
+      reliability: 0.9
+      provenance: Building-management audit trail
+      records: [{subject: clara, location: director_office, start: 1234, end: 1235}]
+    no_override:
+      description: "No administrative overrides were issued that evening."
+      reliability: 0.9
+      provenance: Building-management audit trail
+  act_confront_ben:
+    revises_story:
+      description: "Ben revises his account: he says he came back through the passage for his tools around 8:40."
+      reliability: 0.5
+      provenance: Follow-up interview with Ben
+      statements:
+        - id: st_ben_2
+          speaker: ben
+          claim_type: revised_alibi
+          content: "Fine — I came back through the passage around 8:40 to grab my tools. I never touched the cabinet."
+          placements: [{subject: ben, location: passage, start: 1240, end: 1245}]
+    maintains_story:
+      description: "Ben maintains he left before 8:30."
+      reliability: 0.5
+      provenance: Follow-up interview with Ben
+  act_confront_alice:
+    revises_story:
+      description: "Alice admits she stepped into Lab A briefly to fetch a sample."
+      reliability: 0.5
+      provenance: Follow-up interview with Alice
+      statements:
+        - id: st_alice_2
+          speaker: alice
+          claim_type: revised_alibi
+          content: "I did pop into Lab A for a minute around 8:35 to fetch a sample."
+          placements: [{subject: alice, location: lab_a, start: 1234, end: 1236}]
+    maintains_story:
+      description: "Alice maintains she never left her office."
+      reliability: 0.5
+      provenance: Follow-up interview with Alice
+  act_confront_clara:
+    revises_story:
+      description: "Clara says she stepped out of the meeting to take a call in her office."
+      reliability: 0.5
+      provenance: Follow-up interview with Clara
+      statements:
+        - id: st_clara_2
+          speaker: clara
+          claim_type: revised_alibi
+          content: "I stepped out to take a call in my office, that's all."
+          placements: [{subject: clara, location: director_office, start: 1233, end: 1248}]
+    maintains_story:
+      description: "Clara maintains she never left the meeting."
+      reliability: 0.5
+      provenance: Follow-up interview with Clara
