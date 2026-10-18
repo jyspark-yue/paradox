@@ -57,7 +57,7 @@ def build(store: GraphStore, evaluation: dict, state: dict) -> dict:
     if solved:
         conclusion = f"{leader['description']}."
     else:
-        conclusion = (f"Inconclusive. Leading explanation: {leader['description'].lower()} "
+        conclusion = (f"Inconclusive. Leading explanation: {leader['description']} "
                       f"({belief[leader['id']]:.0%}), which does not meet the stopping criteria.")
     return {
         "case_id": state["case_id"], "title": state["title"], "status": state["status"],

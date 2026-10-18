@@ -1,0 +1,67 @@
+1
+00:00:05,081 --> 00:00:09,683
+Case 001: a prototype vanished from Lab A between 8 and 9 PM. Three suspects, three alibis.
+
+2
+00:00:09,883 --> 00:00:14,887
+Every person, statement, location and investigation lives in a FalkorDB graph. Undiscovered evidence is an empty placeholder.
+
+3
+00:00:15,087 --> 00:00:19,096
+The agent never sees the answer. Ground truth is sealed inside a separate simulator.
+
+4
+00:00:19,296 --> 00:00:23,382
+Step 1: the agent queries the graph and scores each eligible action by expected information gain ÷ cost.
+
+5
+00:00:23,582 --> 00:00:28,987
+Top pick: the Lab A door log. No badge entries, so Ben (who has a passage override) rises from 33% to 63%.
+
+6
+00:00:29,187 --> 00:00:34,615
+Step 2: the main-entrance log. Ben's badge exited at 9:08 PM, but he said he left before 8:30.
+
+7
+00:00:34,815 --> 00:00:40,234
+Walking times traversed in the graph make this a statement-vs-record contradiction. It is flagged, not taken as proof.
+
+8
+00:00:40,434 --> 00:00:45,727
+Step 3: the new evidence changes what is worth checking next. The agent inspects the maintenance-passage log.
+
+9
+00:00:45,927 --> 00:00:50,530
+Ben's override code opened the passage door into Lab A at 8:41 PM. A second contradiction joins the graph.
+
+10
+00:00:50,730 --> 00:00:57,254
+97.6% confidence and three independent evidence bundles meet the stopping rule, so the agent closes the case.
+
+11
+00:00:57,454 --> 00:01:02,883
+Only after closing is the simulator's ground truth unsealed. The conclusion matches it.
+
+12
+00:01:03,083 --> 00:01:08,713
+Is it scripted? Seal the maintenance-passage door, which deletes one CONNECTED_TO edge in the graph.
+
+13
+00:01:08,913 --> 00:01:13,333
+Passage evidence is now outside the crime scene's reach, so those actions become ineligible.
+
+14
+00:01:13,533 --> 00:01:30,865
+Same evidence model, new graph: the agent plans a different third step and still reaches a supported conclusion.
+
+15
+00:01:31,065 --> 00:01:36,439
+Case 002: four suspects. Seal the reading-room door and the evidence that could corroborate the leader is cut off.
+
+16
+00:01:36,639 --> 00:01:52,655
+The agent investigates on its own: archive door log, badge audit, then the only witness it can still reach.
+
+17
+00:01:52,855 --> 00:01:59,065
+Paradox reaches 97% on Esme but reports the case as inconclusive: no reachable evidence can independently confirm it.

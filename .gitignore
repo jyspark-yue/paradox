@@ -5,3 +5,4 @@ __pycache__/
 backend/.data/
 frontend/dist/
 .DS_Store
+demo/*.mp4
